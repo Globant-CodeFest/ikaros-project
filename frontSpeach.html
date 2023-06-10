@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ikaros APP</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    #map {
+      height: 100%;
+    }
+
+    .overlay {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    
+
+
+
+    #overlay input {
+      display: block;
+      margin-bottom: 10px;
+    }
+    
+    .card {
+          border-radius: 1px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          background-color: #f3eeee;
+          padding: 20px;
+          width: 80px;
+          margin: 20px;
+        }
+    
+        /* Estilos para el título de la tarjeta */
+        .card-title {
+          font-size: 16px;
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+    
+        /* Estilos para el contenido de la tarjeta */
+        .card-content {
+          font-size: 16px;
+          color: #555;
+          margin-bottom: 20px;
+        }
+    
+        /* Estilos para el botón de la tarjeta */
+        .card-button {
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          border-radius: 4px;
+          padding: 10px 20px;
+          font-size: 16px;
+          cursor: pointer;
+        }
+    
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+
+<link rel="stylesheet" href="plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+
+<link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+
+<link rel="stylesheet" href="plugins/jqvmap/jqvmap.min.css">
+
+<link rel="stylesheet" href="dist/css/adminlte.min.css?v=3.2.0">
+
+<link rel="stylesheet" href="plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+
+<link rel="stylesheet" href="plugins/daterangepicker/daterangepicker.css">
+
+<link rel="stylesheet" href="plugins/summernote/summernote-bs4.min.css">
+
+  <div class="overlay" style="top: 35%;left: 50%; width:auto; height:auto">
+
+    
+        <div class="row">
+    
+
+    
+
+
+    <div class="card" style="width: 18rem;">
+  <div class="card-header">
+    Biológico
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">20</h5>
+  </div>
+</div>
+
+
+    <div class="card col-md-3">
+        <h2 class="card-title">Biológico</h2>
+        <p class="card-content">20</p>
+    </div>
+    
+    <div class="card col-md-3">
+        <h2 class="card-title">Climatológico</h2>
+        <p class="card-content">20</p>
+    </div>
+
+    <div class="card col-md-3">
+        <h2 class="card-title">Extraterrestre</h2>
+        <p class="card-content">20</p>
+    </div>
+
+        </div>
+
+        
+    
+  </div>
+
+
+  <div class="overlay" style="top: 50%;left: 13%; width:200px; height:auto">
+    <h2 style="font-size: 16px">Recomendaciones y Alternativas de IkarosAPP </h2>
+    <p id="retornoGTP"></p>
+    
+    
+  </div>
+
+
+  <div id="preguntasGTP" class="overlay" style="top: 50%;left: 80%; display:none">
+
+     <div class="container mt-4">
+        <h3>Selecciona el tipo de compra:</h3>
+        <select id="tipoCompraSelect" class="form-control" onchange="mostrarPreguntas()">
+          <option value="">Seleccionar tipo de compra</option>
+        </select>
+        <div id="preguntasContainer" class="mt-4"></div>
+        <div id="respuestasContainer" class="mt-4"></div>
+      </div>
+
+    
+  </div>
+
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" /> 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css" />
+
+  <script>
+    // Inicializar el mapa
+    var mymap = L.map('map').setView([51.505, -0.09], 13);
+    var searchText = "";
+    // Agregar el mapa base de OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(mymap);
+
+    // Agregar el control de búsqueda de lugares
+    var geocoder = L.Control.geocoder({
+      defaultMarkGeocode: true,
+      placeholder:"Buscar lugar donde quieres comprar",
+    }).on('markgeocode', function(e) {
+      var latlng = e.geocode.center;
+      mymap.setView(latlng, 13);
+       searchText = e.geocode.name;
+       var placeName = searchText.split(",")[0]
+        document.getElementById("preguntasGTP").style.display = "";
+        
+        //GptRequest(placeName)
+        ciudad = searchText.split(",")[0];
+        console.log("Texto buscado:", searchText);
+
+    }).addTo(mymap);
+    
+    geocoder._expand();
+
+
+ function GptRequest(namePlace){
+ 
+        var requestQuestion = "Qué sabes de "+namePlace
+        var myHeaders = new Headers();
+        myHeaders.append("Authorization", "Bearer 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");
+        myHeaders.append("Content-Type", "application/json");
+
+        var raw = JSON.stringify({
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {
+            "role": "user",
+            "content": "" +requestQuestion+""
+            }
+        ]
+        });
+
+        var requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+        };
+
+        fetch("https://api.openai.com/v1/chat/completions", requestOptions)
+        .then(response => response.json())
+        .then(result => {
+        var messageContent = result.choices[0].message.content;
+        console.log(messageContent);
+        document.getElementById('retornoGTP').innerText= messageContent;
+
+        
+      })
+      
+        .catch(error => console.log('error', error));
+
+        }
+        
+    
+
+
+    // Obtén una referencia al elemento select
+    const tipoCompraSelect = document.getElementById('tipoCompraSelect');
+    // Obtén una referencia al contenedor de preguntas
+    const preguntasContainer = document.getElementById('preguntasContainer');
+    // Obtén una referencia al contenedor de respuestas
+    const respuestasContainer = document.getElementById('respuestasContainer');
+
+    // Obtén los datos de las opciones desde la lista proporcionada
+    const opciones = [
+      {
+        "tipo_compra": "Terreno agrícola",
+        "preguntas": [
+
+        ],
+        "funciones": [
+          "¿Cuáles son las características del suelo en el terreno de ${nombre_lugar} que afectan su aptitud agrícola?",
+          "¿Qué tipo de cultivos son más adecuados para el terreno de ${nombre_lugar}?",
+          "¿Existen problemas de drenaje o riego en el terreno de ${nombre_lugar} que podrían afectar la producción agrícola?",
+          "¿Hay alguna limitación legal o ambiental en cuanto al uso agrícola del terreno de ${nombre_lugar}?",
+          "¿Cuáles son los costos asociados con la preparación del terreno y el mantenimiento de las operaciones agrícolas en ${nombre_lugar}?",
+          "¿Existe acceso a los mercados y canales de distribución para los productos agrícolas cultivados en ${nombre_lugar}?",
+          "¿Cuáles son los pronósticos o tendencias para la demanda y los precios de los productos agrícolas en ${nombre_lugar}?"
+        ]
+      },
+      {
+        "tipo_compra": "Terreno para vivienda/residencial",
+        "preguntas": [
+
+        ],
+        "funciones": [
+          "¿Cuáles son las opciones de transporte disponibles y la accesibilidad del terreno de ${nombre_lugar} para desplazarse hacia y desde áreas importantes?",
+          "¿Qué servicios básicos están disponibles en el área de ${nombre_lugar}, como agua, electricidad, gas, alcantarillado y telecomunicaciones?",
+          "¿Cuáles son las restricciones o regulaciones de construcción que se aplican al terreno de ${nombre_lugar}?",
+          "¿Existen planes de desarrollo urbano o infraestructura en la zona de ${nombre_lugar} que puedan afectar la calidad de vida?",
+          "¿Cuál es el perfil demográfico y social de la comunidad local en ${nombre_lugar}?",
+          "¿Cuáles son los riesgos naturales presentes en la zona de ${nombre_lugar}, como inundaciones, incendios forestales o terremotos?",
+          "¿Existen servicios educativos, de salud y recreativos disponibles en ${nombre_lugar}?"
+        ]
+      },
+      {
+        "tipo_compra": "Terreno comercial",
+        "preguntas": [
+
+        ],
+        "funciones": [
+          "¿Cuál es la visibilidad y accesibilidad del terreno de ${nombre_lugar} desde las principales vías de tráfico o áreas comerciales?",
+          "¿Cuál es el perfil demográfico de la población objetivo y su poder adquisitivo en esta ubicación de ${nombre_lugar}?",
+          "¿Hay restricciones de zonificación o regulaciones específicas para el tipo de negocio que planeas establecer en ${nombre_lugar}?",
+          "¿Existen competidores directos en el área de ${nombre_lugar} y cuál sería tu ventaja competitiva?",
+          "¿Cuál es el pronóstico de crecimiento económico y comercial en esta zona de ${nombre_lugar}?",
+          "¿Cuáles son las necesidades de infraestructura y servicios que serían requeridos para el negocio en ${nombre_lugar}?",
+          "¿Existe una demanda insatisfecha o una oportunidad de mercado para el tipo de negocio que planeas establecer en ${nombre_lugar}?"
+        ]
+      },
+      {
+        "tipo_compra": "Terreno para inversión",
+        "preguntas": [
+
+        ],
+        "funciones": [
+          "¿Cuál es el historial de valorización del terreno en la zona de ${nombre_lugar} en los últimos años?",
+          "¿Existen proyectos de desarrollo planificados o en proceso en ${nombre_lugar} que podrían aumentar el valor del terreno?",
+          "¿Cuál es la demanda actual y futura de terrenos en esta área de ${nombre_lugar}?",
+          "¿Cuál es la estabilidad política, económica y social de la región de ${nombre_lugar}?",
+          "¿Existen riesgos ambientales, legales o de seguridad que podrían afectar el valor o la inversión en el terreno de ${nombre_lugar}?",
+          "¿Cuáles son las perspectivas de crecimiento económico en la zona de ${nombre_lugar} y cómo podrían afectar la inversión?",
+          "¿Cuál es la disponibilidad de servicios y la infraestructura existente en el área de ${nombre_lugar} que podrían respaldar el desarrollo del terreno?"
+        ]
+      }
+    ];
+
+    // Recorre las opciones y crea los elementos de opción
+    opciones.forEach(opcion => {
+      const option = document.createElement('option');
+      option.value = opcion.tipo_compra;
+      option.textContent = opcion.tipo_compra;
+      tipoCompraSelect.appendChild(option);
+    });
+
+    // Función para mostrar las preguntas correspondientes al tipo de compra seleccionado
+    function mostrarPreguntas() {
+      let tipoCompra = tipoCompraSelect.value;
+      let seleccion = opciones.find(opcion => opcion.tipo_compra === tipoCompra);
+
+      if (seleccion) {
+        let preguntas = seleccion.preguntas;
+        let funciones = seleccion.funciones;
+
+        let preguntasHTML = preguntas.map(pregunta => `<p>${pregunta}</p>`).join('');
+        preguntasContainer.innerHTML = preguntasHTML;
+
+        let selectFunciones = document.createElement('select');
+        selectFunciones.id = 'selectFunciones';
+        selectFunciones.className = 'form-control mt-3';
+        selectFunciones.innerHTML = '<option value="">Seleccionar función</option>';
+
+        funciones.forEach(funcion => {
+          let option = document.createElement('option');
+          option.value = funcion.replace("${nombre_lugar}",ciudad);
+          option.textContent = funcion.replace("${nombre_lugar}",ciudad);
+          selectFunciones.appendChild(option);
+        });
+
+        selectFunciones.addEventListener('change', mostrarFuncionSeleccionada);
+        respuestasContainer.innerHTML = '';
+        respuestasContainer.appendChild(selectFunciones);
+      } else {
+        preguntasContainer.innerHTML = '<p>Selecciona un tipo de compra válido</p>';
+        respuestasContainer.innerHTML = '';
+      }
+    }
+
+    // Función para mostrar la función seleccionada
+    function mostrarFuncionSeleccionada() {
+      const selectFunciones = document.getElementById('selectFunciones');
+      const funcionSeleccionada = selectFunciones.value;
+      respuestasContainer.innerHTML = `<p>Sugerencias: ${funcionSeleccionada}</p>`;
+      
+      GptRequest(funcionSeleccionada)
+      
+    }
+
+
+
+  </script>
+</body>
+</html>
