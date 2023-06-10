@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ClimasModule } from './climas/climas.module';
+import { DisastersModule} from './disasters/disasters.module';
+import { DisastersController } from './disasters/disasters.controller';
 
 @Module({
   imports: [
@@ -8,7 +10,7 @@ import { ClimasModule } from './climas/climas.module';
       useNewUrlParser: true,
       useUnifiedTopology: true,
     }),
-    ClimasModule,
+    DisastersModule,
   ],
 })
 export class AppModule {}
