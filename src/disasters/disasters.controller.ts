@@ -38,6 +38,20 @@ export class DisastersController {
     }
 
 
+    @Get('country/:country/year/:year')
+    async findByCountryAndYear(
+        @Param('country') country: string,
+        @Param('year') year: number
+    ): Promise<Disasters[]> {
+
+        console.log(country);
+        console.log(year)
+        return this.disastersModel.find({ "Country": country , 
+                                          "Year": year
+                                        }).exec();
+    }
+
+
     @Get('country/:country/typeDisaster/:typeDisaster')
     async findByCountryAndTypeDisaster(
         @Param('country') country: string,
